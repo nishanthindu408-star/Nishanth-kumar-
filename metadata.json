@@ -1,0 +1,5 @@
+{
+  "name": "Copy of Sri Tech Tool",
+  "description": "An AI-powered character consistency tool allowing users to upload reference characters and generate multiple story images in batch using Gemini 3 Pro Image Preview models in 4K resolution.",
+  "requestFramePermissions": []
+}
