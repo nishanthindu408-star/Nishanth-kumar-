@@ -28,18 +28,19 @@ export const generateImageWithGemini = async (
   const parts: any[] = [];
 
   // 1. Add Reference Images
-  characters.forEach((char) => {
-    if (char.selected && char.base64 && char.mimeType) {
-      parts.push({
-        inlineData: {
-          data: char.base64,
-          mimeType: char.mimeType,
-        },
-      });
-      parts.push({
-        text: `Reference image for character named "${char.name}". Maintain the appearance of this character.`,
-      });
-    }
+  const selectedCharacters = characters.filter(c => c.selected && c.base64 && c.mimeType);
+  
+  selectedCharacters.forEach((char) => {
+    parts.push({
+      inlineData: {
+        data: char.base64!,
+        mimeType: char.mimeType!,
+      },
+    });
+    // Stronger binding between image and name
+    parts.push({
+      text: `Reference image for character named: "${char.name}"`,
+    });
   });
 
   // 2. Add the main prompt and custom AR instruction if needed
@@ -47,9 +48,16 @@ export const generateImageWithGemini = async (
   if (aspectRatio === 'Custom') {
     fullPrompt += ` (Aspect Ratio: ${customAspectRatio})`;
   }
+
+  // 3. Append explicit instruction if characters are selected
+  if (selectedCharacters.length > 0) {
+      const names = selectedCharacters.map(c => `"${c.name}"`).join(', ');
+      fullPrompt += `\n\n[System Instruction: The images above are reference characters ${names}. When generating the image for the prompt above, you must maintain the exact facial features, hairstyle, and clothing style of these characters if their names appear in the prompt.]`;
+  }
+
   parts.push({ text: fullPrompt });
 
-  // 3. Map Aspect Ratio to API supported values
+  // 4. Map Aspect Ratio to API supported values
   // 'gemini-3-pro-image-preview' supports: "1:1", "3:4", "4:3", "9:16", "16:9"
   let apiAspectRatio = aspectRatio;
   if (aspectRatio === 'Custom') {

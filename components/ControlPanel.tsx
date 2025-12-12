@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Plus, Trash2, Upload, Sparkles, CheckSquare, Square } from 'lucide-react';
+import { Plus, Trash2, Upload, Sparkles, CheckSquare, Square, Edit2 } from 'lucide-react';
 import { Character, PromptItem, AspectRatioOption } from '../types';
 import { fileToBase64 } from '../utils';
 
@@ -88,6 +88,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     }
   };
 
+  const getFirstSelectedName = () => {
+      const char = characters.find(c => c.selected && c.name);
+      return char ? char.name : 'CharacterName';
+  };
+
   return (
     <div className="w-full lg:w-[450px] flex-shrink-0 bg-gray-50 border-r border-gray-200 h-full overflow-y-auto p-6 flex flex-col gap-8">
       
@@ -115,14 +120,16 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   {char.selected ? <CheckSquare size={20} /> : <Square size={20} />}
                 </button>
                 
-                <div className="flex-grow">
+                <div className="flex-grow relative">
                    <input
                     type="text"
                     value={char.name}
                     onChange={(e) => updateCharacterName(idx, e.target.value)}
-                    className="w-full text-sm font-medium text-gray-900 border-none p-0 focus:ring-0 placeholder-gray-400"
-                    placeholder={`Character ${idx + 1} Name`}
+                    className="w-full text-sm font-bold text-gray-800 border-b-2 border-transparent hover:border-gray-200 focus:border-blue-500 p-1 focus:outline-none placeholder-gray-400 bg-transparent transition-all pr-6 rounded-t-md focus:bg-gray-50"
+                    placeholder={`Name (e.g. Alice)`}
+                    title="Click to edit character name"
                   />
+                  <Edit2 size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none opacity-50" />
                 </div>
               </div>
 
@@ -149,7 +156,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 <input
                   type="file"
                   accept="image/*"
-                  ref={el => fileInputRefs.current[idx] = el}
+                  ref={(el) => { fileInputRefs.current[idx] = el; }}
                   className="hidden"
                   onChange={(e) => {
                     if (e.target.files?.[0]) handleCharacterUpload(idx, e.target.files[0]);
@@ -191,7 +198,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/* 3. Prompt List */}
       <section className="flex-grow">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">3. Prompts ({prompts.length}/10)</h2>
           <button 
             onClick={addPrompt}
@@ -202,6 +209,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           </button>
         </div>
         
+        <p className="text-xs text-gray-600 bg-blue-50 border border-blue-100 p-2.5 rounded-lg mb-4 leading-relaxed">
+          <span className="font-semibold text-blue-700">Tip:</span> To ensure consistency, use the exact character names defined above in your prompts. 
+          <br/>
+          Ex: <em>"{getFirstSelectedName()} sitting on a bench..."</em>
+        </p>
+
         <div className="space-y-3">
           {prompts.map((prompt, index) => (
             <div key={prompt.id} className="relative group">
